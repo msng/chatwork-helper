@@ -1,44 +1,75 @@
 {
-  let currentHash: string
-  let mainTimoutId: number
+  const toMessagePattern = /@(\[To:\d+].+さん\n?)$/
+  const actionsOnLocationHashChange: Array<() => void> = []
+
+  let currentLocationHash: string
+  let toList: HTMLDivElement | null
+  let toListShown = false
   let chatTextInput: HTMLTextAreaElement | null
+  let toRemoveTrigger = false
 
-  setInterval(() => {
-    // 初期表示、またはルームを移動して hash が変わった場合のみ main を実行
-    if (currentHash !== location.hash) {
-      currentHash = location.hash
-      clearTimeout(mainTimoutId)
-      main()
+  init()
+
+  function init() {
+    watchLocationHash()
+    watchToListShown()
+    watchChatTextInput()
+    listenKeyUp()
+    actionsOnLocationHashChange.push(unsetToList)
+    actionsOnLocationHashChange.push(unsetChatTextInput)
+  }
+
+  function watchLocationHash() {
+    if (currentLocationHash !== location.hash) {
+      currentLocationHash = location.hash
+      actionsOnLocationHashChange.forEach(action => action())
     }
-  }, 500)
 
-  function main() {
-    chatTextInput = getChatTextInput()
+    requestAnimationFrame(watchLocationHash)
+  }
 
-    if (!chatTextInput) {
-      mainTimoutId = setTimeout(main, 500)
+  function watchToListShown() {
+    !toList && (toList = document.querySelector('#_toList'))
+
+    if (toList) {
+      toListShown = toList.getBoundingClientRect().height > 0
     }
+
+    requestAnimationFrame(watchToListShown)
   }
 
-  function getChatTextInput(): HTMLTextAreaElement | null {
-    return document.querySelector('#_chatText')
+  function unsetToList() {
+    toList = null
   }
 
-  function getToButton(): HTMLButtonElement | null {
-    return document.querySelector('#_to')
+  function watchChatTextInput() {
+    const currentChatTextInput: HTMLTextAreaElement | null = document.querySelector('#_chatText')
+
+    if (chatTextInput !== currentChatTextInput) {
+      chatTextInput = currentChatTextInput
+    }
+
+    if (toRemoveTrigger && chatTextInput && toMessagePattern.test(chatTextInput.value)) {
+      chatTextInput.value = chatTextInput.value.replace(toMessagePattern, '$1')
+      toRemoveTrigger = false
+      toList && (toList.style.removeProperty('display'))
+    }
+
+    requestAnimationFrame(watchChatTextInput)
   }
 
+  function unsetChatTextInput() {
+    chatTextInput = null
+  }
+
+  function listenKeyUp() {
     document.addEventListener('keyup', (e) => {
-      if (!chatTextInput) {
-        return
-      }
-
-      if (e.key === '@') {
-        // 入力内容の末尾が @ だったら、@ を削除して送信ボタンをクリックする
-        (chatTextInput.value.endsWith('@')) && (chatTextInput.value = chatTextInput.value.slice(0, -1))
-        setTimeout(() => {
-          getToButton()?.click()
-        }, 100)
+      if (!toListShown) {
+        if (e.key === '@') {
+          toRemoveTrigger = true;
+          (document.querySelector('#_to') as HTMLButtonElement).click()
+        }
       }
     })
+  }
 }
