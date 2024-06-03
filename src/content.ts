@@ -64,7 +64,11 @@
 
   function listenKeyUp() {
     document.addEventListener('keyup', (e) => {
-      if (!toListShown) {
+      if (toListShown) {
+        if (e.key === 'Escape') {
+          chatTextInput && (chatTextInput.focus())
+        }
+      } else {
         if (e.key === '@') {
           toRemoveTrigger = true;
           (document.querySelector('#_to') as HTMLButtonElement).click()
