@@ -1,5 +1,5 @@
 {
-  const toMessagePattern = /@(\[To:\d+].+\n?)$/
+  const toMessagePattern = /[@＠](\[To:\d+].+\n?)$/
   const actionsOnLocationHashChange: Array<() => void> = []
 
   let currentLocationHash: string
