@@ -4,7 +4,10 @@
   "manifest_version": 3,
   "description": "",
   "content_scripts": [{
-    "matches": ["https://www.chatwork.com/*"],
+    "matches": [
+      "https://www.chatwork.com/*",
+      "https://kcw.kddi.ne.jp/*"
+    ],
     "js": [
       "dist/content.js"
     ]
