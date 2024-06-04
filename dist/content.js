@@ -1,6 +1,6 @@
 "use strict";
 {
-    const toMessagePattern = /@(\[To:\d+].+さん\n?)$/;
+    const toMessagePattern = /@(\[To:\d+].+\n?)$/;
     const actionsOnLocationHashChange = [];
     let currentLocationHash;
     let toList;
